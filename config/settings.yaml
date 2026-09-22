@@ -11,7 +11,7 @@ video:
 
 text:
   font_dir: assets/fonts
-  font_file: Montserrat-ExtraBold.ttf
+  font_file: ArchivoBlack-Regular.ttf
   headline_font_size: 66
   line_height_multiplier: 1.3
   max_text_width_px: 880
