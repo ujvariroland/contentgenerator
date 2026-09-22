@@ -53,15 +53,23 @@ def render(draft_path: Path, lang: str, config: dict) -> Path:
     output_path = video_dir / f"news_{lang}.mp4"
     ffmpeg = find_ffmpeg()
 
+    filter_complex = (
+        f"[0:v]scale={v['width']}:{v['height']}[bg];"
+        f"[bg][1:v]overlay=0:0[vout]"
+    )
     cmd = [
         ffmpeg, "-y",
         "-stream_loop", "-1", "-i", str(background_path),
         "-i", str(overlay_path),
-        "-filter_complex", "overlay=0:0",
+        "-filter_complex", filter_complex,
+        "-map", "[vout]",
+        "-map", "0:a?",
         "-t", str(v["duration_seconds"]),
         "-r", str(v["fps"]),
         "-c:v", "libx264",
+        "-c:a", "aac",
         "-pix_fmt", "yuv420p",
+        "-shortest",
         str(output_path),
     ]
     subprocess.run(cmd, check=True)

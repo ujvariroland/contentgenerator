@@ -1,5 +1,10 @@
 """Render a transparent PNG text overlay (title + headlines) for the news reel.
 
+Style: one rounded white box per line item (title, then each headline), black text
+inside, stacked top-to-bottom, left-aligned. Boxes are sized to their own text (not
+full-width) so the background clip stays visible around them. No animation - this
+overlay is composited once and burned in for the whole clip duration.
+
 Usage:
     python scripts/build_text_overlay.py --draft output/drafts/2026-09-22_news_draft.json --lang en --out output/videos/2026-09-22/overlay_en.png
 
@@ -9,7 +14,6 @@ Can also be imported and called as build_overlay(...) from render_video.py.
 from __future__ import annotations
 
 import argparse
-import textwrap
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -34,6 +38,36 @@ def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFon
     return lines
 
 
+def _draw_box(
+    draw: ImageDraw.ImageDraw,
+    lines: list[str],
+    font: ImageFont.FreeTypeFont,
+    x: int,
+    y: int,
+    line_height: int,
+    t: dict,
+) -> int:
+    """Draw one rounded white box containing the given lines, left-aligned. Returns box height."""
+    pad_x, pad_y = t["box_padding_x"], t["box_padding_y"]
+    text_width = max((draw.textlength(line, font=font) for line in lines), default=0)
+    box_width = text_width + 2 * pad_x
+    box_height = len(lines) * line_height + 2 * pad_y
+
+    draw.rounded_rectangle(
+        [(x, y), (x + box_width, y + box_height)],
+        radius=t["box_radius_px"],
+        fill=tuple(t["box_fill_color"]),
+    )
+
+    text_fill = tuple(t["fill_color"])
+    cursor_y = y + pad_y
+    for line in lines:
+        draw.text((x + pad_x, cursor_y), line, font=font, fill=text_fill)
+        cursor_y += line_height
+
+    return box_height
+
+
 def build_overlay(draft: dict, lang: str, config: dict) -> Image.Image:
     v = config["video"]
     t = config["text"]
@@ -46,53 +80,32 @@ def build_overlay(draft: dict, lang: str, config: dict) -> Image.Image:
     headline_font = ImageFont.truetype(str(font_path), t["headline_font_size"])
     title_font = ImageFont.truetype(str(font_path), t["title_font_size"])
 
-    max_width = t["max_text_width_px"]
-    line_height = int(t["headline_font_size"] * t["line_height_multiplier"])
+    max_text_width = t["max_text_width_px"]
+    headline_line_height = int(t["headline_font_size"] * t["line_height_multiplier"])
     title_line_height = int(t["title_font_size"] * t["line_height_multiplier"])
 
-    fill = tuple(t["fill_color"])
-    stroke_fill = tuple(t["stroke_color"])
-    stroke_width = t["stroke_width"]
-    scrim_color = tuple(t["scrim_color"])
-    scrim_padding = t["scrim_padding_px"]
-
     x = t["margin_left_px"]
-    max_text_width = width - t["margin_left_px"] - t["margin_right_px"]
-    max_text_width = min(max_text_width, max_width)
-
-    # Build the full block of lines first (title + headlines) so we can size the scrim.
-    title_text = t["title_text"].get(lang, t["title_text"]["en"])
-    title_lines = _wrap_text(draw, title_text, title_font, max_text_width)
-
-    headline_lines: list[str] = []
-    for h in draft.get("headlines", []):
-        text = h.get(lang, h.get("en", ""))
-        bullet = f"• {text}"
-        headline_lines.extend(_wrap_text(draw, bullet, headline_font, max_text_width))
-        if len(headline_lines) >= t["max_lines"] * 2:
-            break
-
-    block_height = len(title_lines) * title_line_height + 30 + len(headline_lines) * line_height
     safe_top = t["safe_top_px"]
     safe_bottom = t["safe_bottom_px"]
-    available = safe_bottom - safe_top
-    y = safe_top + max(0, (available - block_height) // 2)
+    gap = t["box_gap_px"]
 
-    scrim_top = y - scrim_padding
-    scrim_bottom = y + block_height + scrim_padding
-    draw.rectangle(
-        [(0, max(0, scrim_top)), (width, min(height, scrim_bottom))],
-        fill=scrim_color,
-    )
+    # Build the list of boxed items: title first, then each headline.
+    title_text = t["title_text"].get(lang, t["title_text"]["en"])
+    items: list[tuple[list[str], ImageFont.FreeTypeFont, int]] = [
+        (_wrap_text(draw, title_text, title_font, max_text_width), title_font, title_line_height),
+    ]
+    for h in draft.get("headlines", []):
+        text = h.get(lang, h.get("en", ""))
+        lines = _wrap_text(draw, text, headline_font, max_text_width)
+        items.append((lines, headline_font, headline_line_height))
 
-    cursor_y = y
-    for line in title_lines:
-        draw.text((x, cursor_y), line, font=title_font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-        cursor_y += title_line_height
-    cursor_y += 30
-    for line in headline_lines:
-        draw.text((x, cursor_y), line, font=headline_font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-        cursor_y += line_height
+    cursor_y = safe_top
+    for lines, font, line_height in items:
+        box_height = len(lines) * line_height + 2 * t["box_padding_y"]
+        if cursor_y + box_height > safe_bottom:
+            break
+        cursor_y += _draw_box(draw, lines, font, x, cursor_y, line_height, t)
+        cursor_y += gap
 
     return img
 
