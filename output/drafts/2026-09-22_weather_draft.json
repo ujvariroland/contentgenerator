@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-22",
+  "anomalies": [
+    {
+      "tournament": "Singapore Tennis Open",
+      "city": "Singapore",
+      "type": "heavy_rain",
+      "severity": "moderate",
+      "detail": "Precipitation probability 100%, up to 3.2mm/3h",
+      "suggested_angle_en": "Rain is essentially certain in Singapore today, which likely means match delays and a compressed schedule as the day goes on. Players waiting on court could face longer, colder warm-ups after stoppages, and live in-play markets may swing on scheduling news rather than form - worth watching for value if a match gets pushed into a fast turnaround.",
+      "suggested_angle_hu": "Szingapúrban ma gyakorlatilag biztos az eső, ami valószínűleg meccshalasztásokat és összesűrűsödő napi programot jelent. A várakozó játékosoknak a szünetek után hosszabb, hidegebb bemelegítéssel kell számolniuk, az élő fogadási piacokon pedig inkább az ütemezési hírek, mint a forma mozgathatja az odds-okat - érdemes figyelni, ha egy meccset gyors egymásutánba tolnak."
+    },
+    {
+      "tournament": "Chengdu Open",
+      "city": "Chengdu",
+      "type": "heavy_rain",
+      "severity": "moderate",
+      "detail": "Precipitation probability 61%, up to 0.4mm/3h",
+      "suggested_angle_en": "Chengdu has a moderate chance of rain today - not a washout, but enough risk of short interruptions that outdoor matches could see stop-start rhythm. This tends to favor players with strong mental reset routines over big hitters relying on rhythm.",
+      "suggested_angle_hu": "Csengtuban ma mérsékelt az esély esőre - nem lesz teljes esőnap, de annyi megszakítás előfordulhat, hogy a szabadtéri meccsek döcögősebb ritmusúak lehetnek. Ez inkább a jó mentális újraindulási rutinnal rendelkező játékosoknak kedvezhet, mint a ritmusra építő nagyütős típusoknak."
+    }
+  ]
+}

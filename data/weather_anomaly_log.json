@@ -1,0 +1,18 @@
+{
+  "2026-09-22": [
+    {
+      "tournament": "Singapore Tennis Open",
+      "city": "Singapore",
+      "type": "heavy_rain",
+      "severity": "moderate",
+      "detail": "Precipitation probability 100%, up to 3.2mm/3h"
+    },
+    {
+      "tournament": "Chengdu Open",
+      "city": "Chengdu",
+      "type": "heavy_rain",
+      "severity": "moderate",
+      "detail": "Precipitation probability 61%, up to 0.4mm/3h"
+    }
+  ]
+}
