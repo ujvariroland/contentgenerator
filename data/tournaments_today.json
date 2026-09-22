@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-22",
+  "tournaments": [
+    {
+      "name": "Singapore Tennis Open",
+      "city": "Singapore",
+      "country": "SG",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Hana Bank Korea Open",
+      "city": "Seoul",
+      "country": "KR",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Chengdu Open",
+      "city": "Chengdu",
+      "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Hangzhou Open",
+      "city": "Hangzhou",
+      "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    }
+  ]
+}

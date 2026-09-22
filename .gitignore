@@ -4,3 +4,4 @@ __pycache__/
 .env
 output/videos/**/*.mp4
 output/videos/**/*.png
+.claude/settings.local.json
