@@ -14,22 +14,22 @@ text:
   # left-aligned, boxes sized to their own text (not full-width) so the clip shows through.
   font_dir: assets/fonts
   font_file: ArchivoBlack-Regular.ttf
-  headline_font_size: 42
+  headline_font_size: 34
   line_height_multiplier: 1.15
   max_text_width_px: 780      # max text width inside a box (excludes box padding)
   fill_color: [0, 0, 0, 255]         # black text
   box_fill_color: [255, 255, 255, 255]   # white box background
-  box_radius_px: 22
-  box_padding_x: 26
-  box_padding_y: 16
-  box_gap_px: 18              # vertical gap between boxes
+  box_radius_px: 18
+  box_padding_x: 22
+  box_padding_y: 13
+  box_gap_px: 16              # vertical gap between boxes
   safe_top_px: 220
   safe_bottom_px: 1700
-  margin_left_px: 60
+  margin_left_px: 36
   title_text:
-    en: "Probably you missed these tennis news today"
-    hu: "Ezeket a teniszhíreket valószínűleg lemaradtad ma"
-  title_font_size: 46
+    en: "Tennis news you've probably missed today"
+    hu: "Tenisz hírek, amikről valószínűleg lemaradtál"
+  title_font_size: 38
 
 weather:
   api_base_url: "https://api.openweathermap.org/data/2.5"
