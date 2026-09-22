@@ -16,20 +16,21 @@ text:
   font_file: ArchivoBlack-Regular.ttf
   headline_font_size: 34
   line_height_multiplier: 1.15
-  max_text_width_px: 780      # max text width inside a box (excludes box padding)
+  max_text_width_px: 560      # max headline text width inside a box (narrower so the clip stays visible on the right)
   fill_color: [0, 0, 0, 255]         # black text
   box_fill_color: [255, 255, 255, 255]   # white box background
   box_radius_px: 18
   box_padding_x: 22
   box_padding_y: 13
   box_gap_px: 16              # vertical gap between boxes
-  safe_top_px: 220
   safe_bottom_px: 1700
   margin_left_px: 36
   title_text:
     en: "Tennis news you've probably missed today"
     hu: "Tenisz hírek, amikről valószínűleg lemaradtál"
   title_font_size: 38
+  title_top_px: 100           # title box is centered horizontally, pinned near the top
+  title_max_width_px: 860     # wider than headlines since it's a single centered banner
 
 weather:
   api_base_url: "https://api.openweathermap.org/data/2.5"

@@ -38,6 +38,12 @@ def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFon
     return lines
 
 
+def _box_size(draw: ImageDraw.ImageDraw, lines: list[str], font: ImageFont.FreeTypeFont, line_height: int, t: dict) -> tuple[float, float]:
+    pad_x, pad_y = t["box_padding_x"], t["box_padding_y"]
+    text_width = max((draw.textlength(line, font=font) for line in lines), default=0)
+    return text_width + 2 * pad_x, len(lines) * line_height + 2 * pad_y
+
+
 def _draw_box(
     draw: ImageDraw.ImageDraw,
     lines: list[str],
@@ -46,12 +52,11 @@ def _draw_box(
     y: int,
     line_height: int,
     t: dict,
+    align: str = "left",
 ) -> int:
-    """Draw one rounded white box containing the given lines, left-aligned. Returns box height."""
+    """Draw one rounded white box containing the given lines. Returns box height."""
     pad_x, pad_y = t["box_padding_x"], t["box_padding_y"]
-    text_width = max((draw.textlength(line, font=font) for line in lines), default=0)
-    box_width = text_width + 2 * pad_x
-    box_height = len(lines) * line_height + 2 * pad_y
+    box_width, box_height = _box_size(draw, lines, font, line_height, t)
 
     draw.rounded_rectangle(
         [(x, y), (x + box_width, y + box_height)],
@@ -62,7 +67,12 @@ def _draw_box(
     text_fill = tuple(t["fill_color"])
     cursor_y = y + pad_y
     for line in lines:
-        draw.text((x + pad_x, cursor_y), line, font=font, fill=text_fill)
+        if align == "center":
+            line_width = draw.textlength(line, font=font)
+            line_x = x + (box_width - line_width) / 2
+        else:
+            line_x = x + pad_x
+        draw.text((line_x, cursor_y), line, font=font, fill=text_fill)
         cursor_y += line_height
 
     return box_height
@@ -81,30 +91,31 @@ def build_overlay(draft: dict, lang: str, config: dict) -> Image.Image:
     title_font = ImageFont.truetype(str(font_path), t["title_font_size"])
 
     max_text_width = t["max_text_width_px"]
+    title_max_width = t["title_max_width_px"]
     headline_line_height = int(t["headline_font_size"] * t["line_height_multiplier"])
     title_line_height = int(t["title_font_size"] * t["line_height_multiplier"])
 
     x = t["margin_left_px"]
-    safe_top = t["safe_top_px"]
     safe_bottom = t["safe_bottom_px"]
     gap = t["box_gap_px"]
 
-    # Build the list of boxed items: title first, then each headline.
+    # Title: centered horizontally, pinned near the top.
     title_text = t["title_text"].get(lang, t["title_text"]["en"])
-    items: list[tuple[list[str], ImageFont.FreeTypeFont, int]] = [
-        (_wrap_text(draw, title_text, title_font, max_text_width), title_font, title_line_height),
-    ]
+    title_lines = _wrap_text(draw, title_text, title_font, title_max_width)
+    title_box_width, title_box_height = _box_size(draw, title_lines, title_font, title_line_height, t)
+    title_x = (width - title_box_width) / 2
+    title_y = t["title_top_px"]
+    _draw_box(draw, title_lines, title_font, title_x, title_y, title_line_height, t, align="center")
+
+    # Headlines: left-aligned, stacked below the title, narrower so the clip stays visible.
+    cursor_y = title_y + title_box_height + gap * 2
     for h in draft.get("headlines", []):
         text = h.get(lang, h.get("en", ""))
         lines = _wrap_text(draw, text, headline_font, max_text_width)
-        items.append((lines, headline_font, headline_line_height))
-
-    cursor_y = safe_top
-    for lines, font, line_height in items:
-        box_height = len(lines) * line_height + 2 * t["box_padding_y"]
+        box_height = len(lines) * headline_line_height + 2 * t["box_padding_y"]
         if cursor_y + box_height > safe_bottom:
             break
-        cursor_y += _draw_box(draw, lines, font, x, cursor_y, line_height, t)
+        cursor_y += _draw_box(draw, lines, headline_font, x, cursor_y, headline_line_height, t)
         cursor_y += gap
 
     return img
