@@ -14,11 +14,13 @@ text:
   # left-aligned, boxes sized to their own text (not full-width) so the clip shows through.
   font_dir: assets/fonts
   font_file: ArchivoBlack-Regular.ttf
-  headline_font_size: 34
+  headline_font_size: 28
   line_height_multiplier: 1.15
   max_text_width_px: 560      # max headline text width inside a box (narrower so the clip stays visible on the right)
-  fill_color: [0, 0, 0, 255]         # black text
-  box_fill_color: [255, 255, 255, 255]   # white box background
+  fill_color: [212, 175, 55, 255]         # Tennis Lab gold text
+  box_fill_color: [13, 27, 51, 235]       # Tennis Lab navy box background
+  box_border_color: [212, 175, 55, 255]   # gold border, matches the logo ring
+  box_border_width: 3
   box_radius_px: 18
   box_padding_x: 22
   box_padding_y: 13
@@ -28,7 +30,7 @@ text:
   title_text:
     en: "Tennis news you've probably missed today"
     hu: "Tenisz hírek, amikről valószínűleg lemaradtál"
-  title_font_size: 38
+  title_font_size: 32
   title_top_px: 100           # title box is centered horizontally, pinned near the top
   title_max_width_px: 860     # wider than headlines since it's a single centered banner
 

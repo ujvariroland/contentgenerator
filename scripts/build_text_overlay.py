@@ -62,6 +62,8 @@ def _draw_box(
         [(x, y), (x + box_width, y + box_height)],
         radius=t["box_radius_px"],
         fill=tuple(t["box_fill_color"]),
+        outline=tuple(t["box_border_color"]),
+        width=t["box_border_width"],
     )
 
     text_fill = tuple(t["fill_color"])
