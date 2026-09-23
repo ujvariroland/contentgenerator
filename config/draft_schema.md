@@ -37,6 +37,10 @@ never need to guess at what Claude wrote.
   context or stakes), a comment/save call-to-action, a follow prompt, and 8-12 relevant
   hashtags at the end (mix of broad tennis tags and specific ones like player/event names).
   The Hungarian version is a natural rewrite for the audience, not a literal translation.
+- Alongside the JSON, also write each caption as its own plain-text sibling file with real
+  line breaks (not `\n` escapes), so it can be copy-pasted straight into Instagram:
+  `output/drafts/<date>_instagram_caption_en.txt` and `..._hu.txt`. The JSON field is the
+  source of truth for automation/history; the `.txt` files are for the human to copy from.
 
 ## Weather draft — `output/drafts/<date>_weather_draft.json`
 
