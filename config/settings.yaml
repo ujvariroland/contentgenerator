@@ -14,7 +14,7 @@ text:
   # left-aligned, boxes sized to their own text (not full-width) so the clip shows through.
   font_dir: assets/fonts
   font_file: ArchivoBlack-Regular.ttf
-  headline_font_size: 28
+  headline_font_size: 32
   line_height_multiplier: 1.15
   max_text_width_px: 560      # max headline text width inside a box (narrower so the clip stays visible on the right)
   fill_color: [212, 175, 55, 255]         # Tennis Lab gold text
@@ -24,15 +24,16 @@ text:
   box_radius_px: 18
   box_padding_x: 22
   box_padding_y: 13
-  box_gap_px: 16              # vertical gap between boxes
+  box_gap_px: 28              # vertical gap between headline boxes
   safe_bottom_px: 1700
   margin_left_px: 36
   title_text:
     en: "Tennis news you've probably missed today"
     hu: "Tenisz hírek, amikről valószínűleg lemaradtál"
-  title_font_size: 32
-  title_top_px: 100           # title box is centered horizontally, pinned near the top
+  title_font_size: 40
+  title_top_px: 170           # title box is centered horizontally, still near the top but lower than before
   title_max_width_px: 860     # wider than headlines since it's a single centered banner
+  title_headline_gap_px: 90   # extra space between the title box and the first headline box
 
 weather:
   api_base_url: "https://api.openweathermap.org/data/2.5"

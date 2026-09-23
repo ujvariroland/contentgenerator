@@ -110,7 +110,7 @@ def build_overlay(draft: dict, lang: str, config: dict) -> Image.Image:
     _draw_box(draw, title_lines, title_font, title_x, title_y, title_line_height, t, align="center")
 
     # Headlines: left-aligned, stacked below the title, narrower so the clip stays visible.
-    cursor_y = title_y + title_box_height + gap * 2
+    cursor_y = title_y + title_box_height + t["title_headline_gap_px"]
     for h in draft.get("headlines", []):
         text = h.get(lang, h.get("en", ""))
         lines = _wrap_text(draw, text, headline_font, max_text_width)
