@@ -17,7 +17,11 @@ never need to guess at what Claude wrote.
     }
   ],
   "background_file": "tennis_loop_01.mp4",
-  "status": "pending"
+  "status": "pending",
+  "instagram_caption": {
+    "en": "🎾 TENNIS NEWS YOU MIGHT'VE MISSED TODAY 🎾\n\n...long, engaging caption with a hook, one paragraph per headline, a call-to-action, and a follow prompt...\n\n#Tennis #ATP #WTA #TennisNews",
+    "hu": "🎾 EZEKET A TENISZHÍREKET VALÓSZÍNŰLEG LEMARADTAD MA 🎾\n\n...ugyanaz magyarul, nem szó szerinti fordítás, hanem természetes stílusban...\n\n#Tenisz #ATP #WTA #TeniszHirek"
+  }
 }
 ```
 
@@ -27,6 +31,12 @@ never need to guess at what Claude wrote.
   `config/settings.yaml -> video.default_background` if omitted.
 - `status`: `"pending"` until the user approves in Phase B; scripts don't rely on this field,
   it's for human/Claude bookkeeping only.
+- `instagram_caption`: written by Claude (not a script) alongside the headlines, one per
+  language. Always long-form and algorithm-friendly: an attention-grabbing hook line, one
+  short paragraph per headline (not just a bare repeat of the on-video bullet — add a little
+  context or stakes), a comment/save call-to-action, a follow prompt, and 8-12 relevant
+  hashtags at the end (mix of broad tennis tags and specific ones like player/event names).
+  The Hungarian version is a natural rewrite for the audience, not a literal translation.
 
 ## Weather draft — `output/drafts/<date>_weather_draft.json`
 
