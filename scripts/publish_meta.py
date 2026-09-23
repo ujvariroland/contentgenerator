@@ -118,19 +118,64 @@ def get_media_permalink(media_id: str, page_token: str, config: dict) -> str | N
     return resp.json().get("permalink")
 
 
+def post_facebook_video(page_id: str, page_token: str, video_url: str, caption: str, config: dict) -> str:
+    """Post the same video natively to the Facebook Page's feed. Returns the video ID."""
+    resp = requests.post(
+        graph_url(config, f"{page_id}/videos"),
+        data={
+            "file_url": video_url,
+            "description": caption,
+            "access_token": page_token,
+        },
+        timeout=60,
+    )
+    _raise_with_body(resp)
+    return resp.json()["id"]
+
+
+def get_facebook_video_permalink(video_id: str, page_token: str, config: dict) -> str | None:
+    resp = requests.get(
+        graph_url(config, video_id),
+        params={"fields": "permalink_url", "access_token": page_token},
+        timeout=30,
+    )
+    _raise_with_body(resp)
+    permalink = resp.json().get("permalink_url")
+    if permalink and permalink.startswith("/"):
+        permalink = f"https://www.facebook.com{permalink}"
+    return permalink
+
+
 TELEGRAM_ANNOUNCEMENT = {
-    "en": "\U0001F3BE Today's tennis news digest is live! Check it out \U0001F449 {url}",
-    "hu": "\U0001F3BE Elkészült a mai tenisz hír-összefoglaló! Nézd meg itt \U0001F449 {url}",
+    "en": (
+        "Good morning to all tennis fans! ☀️\U0001F3BE\n\n"
+        "We've got today's freshest tennis news for you — everything worth knowing if "
+        "you're into the world of tennis. \U0001F4E9\n\n"
+        "Check it out at the link below:\n\n"
+        "\U0001F4F7: {instagram_url}\n\n"
+        "If you enjoyed it and want to see more posts like this, please follow us on social "
+        "media and leave an algorithm-friendly like/comment."
+    ),
+    "hu": (
+        "Jó reggelt minden tenisz rajóngónak.☀️\U0001F3BE\n\n"
+        "Elhoztuk a mai napi legfrissebb híreket, minden amiről érdemes tudnod, ha "
+        "érdekel a tenisz világa.\U0001F4E9\n\n"
+        "Az alábbi linkeken tekintheted meg ezeket:\n\n"
+        "\U0001F60E: {facebook_url}\n\n"
+        "\U0001F4F7: {instagram_url}\n\n"
+        "Ha tetszett, és szeretnél több ilyen posztot látni, kérlek kövess be a social "
+        "médián keresztül és hagyj egy algoritmus támogató like-ot/kommentet."
+    ),
 }
 
 
-def send_telegram_announcement(lang: str, permalink: str) -> None:
+def send_telegram_announcement(lang: str, instagram_url: str, facebook_url: str | None) -> None:
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get(f"TELEGRAM_{lang.upper()}_CHAT_ID")
     if not bot_token or not chat_id:
         print(f"Skipping Telegram announcement - missing TELEGRAM_BOT_TOKEN or TELEGRAM_{lang.upper()}_CHAT_ID")
         return
-    text = TELEGRAM_ANNOUNCEMENT[lang].format(url=permalink)
+    text = TELEGRAM_ANNOUNCEMENT[lang].format(instagram_url=instagram_url, facebook_url=facebook_url or "")
     resp = requests.post(
         f"https://api.telegram.org/bot{bot_token}/sendMessage",
         data={"chat_id": chat_id, "text": text},
@@ -170,6 +215,7 @@ def main() -> int:
 
     env_prefix = f"META_{lang.upper()}_"
     ig_account_id = os.environ.get(f"{env_prefix}IG_BUSINESS_ACCOUNT_ID")
+    page_id = os.environ.get(f"{env_prefix}PAGE_ID")
     page_token = os.environ.get(f"{env_prefix}PAGE_ACCESS_TOKEN")
     if not ig_account_id or not page_token:
         raise SystemExit(f"Missing {env_prefix}IG_BUSINESS_ACCOUNT_ID / {env_prefix}PAGE_ACCESS_TOKEN in .env")
@@ -192,12 +238,30 @@ def main() -> int:
     media_id = result.get("id")
     print(f"Published! Media ID: {media_id}")
 
-    permalink = get_media_permalink(media_id, page_token, config)
-    if permalink:
-        print(f"Permalink: {permalink}")
-        send_telegram_announcement(lang, permalink)
+    instagram_permalink = get_media_permalink(media_id, page_token, config)
+    if instagram_permalink:
+        print(f"Instagram permalink: {instagram_permalink}")
     else:
-        print("Could not fetch permalink - skipping Telegram announcement.")
+        print("Could not fetch Instagram permalink.")
+
+    facebook_permalink = None
+    if lang in config["publishing"].get("facebook_post_languages", []):
+        if not page_id:
+            print(f"Skipping Facebook post - missing {env_prefix}PAGE_ID in .env")
+        else:
+            print("Posting to Facebook Page...")
+            fb_video_id = post_facebook_video(page_id, page_token, video_url, caption, config)
+            print(f"Facebook video posted! Video ID: {fb_video_id}")
+            facebook_permalink = get_facebook_video_permalink(fb_video_id, page_token, config)
+            if facebook_permalink:
+                print(f"Facebook permalink: {facebook_permalink}")
+            else:
+                print("Could not fetch Facebook permalink.")
+
+    if instagram_permalink:
+        send_telegram_announcement(lang, instagram_permalink, facebook_permalink)
+    else:
+        print("Skipping Telegram announcement - no Instagram permalink.")
 
     return 0
 

@@ -71,3 +71,5 @@ publishing:
   # Both accounts publish via a Facebook Page's linked Instagram Business Account
   # (env vars: META_<LANG>_PAGE_ID, META_<LANG>_IG_BUSINESS_ACCOUNT_ID, META_<LANG>_PAGE_ACCESS_TOKEN)
   accounts: [en, hu]
+  # Which languages also get a Facebook Page video post (in addition to the Instagram Reel)
+  facebook_post_languages: [hu]
