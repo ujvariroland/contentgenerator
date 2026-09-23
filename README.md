@@ -73,6 +73,12 @@ share one Meta app with two Pages):
    This repo only ever holds videos that are moments away from being posted publicly - the
    Graph API needs a public HTTPS URL to fetch the video from, it can't accept a direct
    upload. `scripts/publish_meta.py` pushes to it automatically.
+9. (Optional but recommended) Create a Telegram bot via **@BotFather** (`/newbot`), add it
+   as admin to both Telegram channels, send a test message in each, then check
+   `https://api.telegram.org/bot<token>/getUpdates` to find each channel's chat ID. Save as
+   `TELEGRAM_BOT_TOKEN`, `TELEGRAM_EN_CHAT_ID`, `TELEGRAM_HU_CHAT_ID` in `.env`. Once set,
+   `publish_meta.py` automatically posts an announcement with the new post's link to the
+   matching Telegram channel right after a successful publish.
 
 ## Daily workflow
 

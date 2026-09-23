@@ -108,6 +108,40 @@ def publish_container(ig_account_id: str, page_token: str, creation_id: str, con
     return resp.json()
 
 
+def get_media_permalink(media_id: str, page_token: str, config: dict) -> str | None:
+    resp = requests.get(
+        graph_url(config, media_id),
+        params={"fields": "permalink", "access_token": page_token},
+        timeout=30,
+    )
+    _raise_with_body(resp)
+    return resp.json().get("permalink")
+
+
+TELEGRAM_ANNOUNCEMENT = {
+    "en": "\U0001F3BE Today's tennis news digest is live! Check it out \U0001F449 {url}",
+    "hu": "\U0001F3BE Elkészült a mai tenisz hír-összefoglaló! Nézd meg itt \U0001F449 {url}",
+}
+
+
+def send_telegram_announcement(lang: str, permalink: str) -> None:
+    bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get(f"TELEGRAM_{lang.upper()}_CHAT_ID")
+    if not bot_token or not chat_id:
+        print(f"Skipping Telegram announcement - missing TELEGRAM_BOT_TOKEN or TELEGRAM_{lang.upper()}_CHAT_ID")
+        return
+    text = TELEGRAM_ANNOUNCEMENT[lang].format(url=permalink)
+    resp = requests.post(
+        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+        data={"chat_id": chat_id, "text": text},
+        timeout=30,
+    )
+    if not resp.ok:
+        print(f"Telegram announcement failed ({resp.status_code}): {resp.text}")
+    else:
+        print("Telegram announcement sent.")
+
+
 def main() -> int:
     load_dotenv(project_path(".env"))
     parser = argparse.ArgumentParser()
@@ -155,7 +189,16 @@ def main() -> int:
 
     print("Publishing...")
     result = publish_container(ig_account_id, page_token, creation_id, config)
-    print(f"Published! Media ID: {result.get('id')}")
+    media_id = result.get("id")
+    print(f"Published! Media ID: {media_id}")
+
+    permalink = get_media_permalink(media_id, page_token, config)
+    if permalink:
+        print(f"Permalink: {permalink}")
+        send_telegram_announcement(lang, permalink)
+    else:
+        print("Could not fetch permalink - skipping Telegram announcement.")
+
     return 0
 
 
