@@ -60,6 +60,11 @@ def graph_url(config: dict, path: str) -> str:
     return f"https://graph.facebook.com/{version}/{path}"
 
 
+def _raise_with_body(resp: requests.Response) -> None:
+    if not resp.ok:
+        raise SystemExit(f"Graph API error {resp.status_code} for {resp.url}:\n{resp.text}")
+
+
 def create_reel_container(ig_account_id: str, page_token: str, video_url: str, caption: str, config: dict) -> str:
     resp = requests.post(
         graph_url(config, f"{ig_account_id}/media"),
@@ -71,7 +76,7 @@ def create_reel_container(ig_account_id: str, page_token: str, video_url: str, c
         },
         timeout=60,
     )
-    resp.raise_for_status()
+    _raise_with_body(resp)
     return resp.json()["id"]
 
 
@@ -83,7 +88,7 @@ def wait_for_container_ready(creation_id: str, page_token: str, config: dict, ti
             params={"fields": "status_code", "access_token": page_token},
             timeout=30,
         )
-        resp.raise_for_status()
+        _raise_with_body(resp)
         status = resp.json().get("status_code")
         if status == "FINISHED":
             return
@@ -99,7 +104,7 @@ def publish_container(ig_account_id: str, page_token: str, creation_id: str, con
         data={"creation_id": creation_id, "access_token": page_token},
         timeout=60,
     )
-    resp.raise_for_status()
+    _raise_with_body(resp)
     return resp.json()
 
 
