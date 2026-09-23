@@ -60,3 +60,13 @@ paths:
   tournaments_today: data/tournaments_today.json
   drafts_dir: output/drafts
   videos_dir: output/videos
+
+publishing:
+  # Public repo used purely to give the Meta Graph API a fetchable HTTPS URL for the video
+  # (it can't accept direct file uploads). Path is relative to this project's parent folder.
+  media_repo_path: ../contentmedia
+  media_repo_raw_base: "https://raw.githubusercontent.com/ujvariroland/contentmedia/main"
+  graph_api_version: v21.0
+  # Both accounts publish via a Facebook Page's linked Instagram Business Account
+  # (env vars: META_<LANG>_PAGE_ID, META_<LANG>_IG_BUSINESS_ACCOUNT_ID, META_<LANG>_PAGE_ACCESS_TOKEN)
+  accounts: [en, hu]

@@ -1,0 +1,158 @@
+"""Publish a rendered reel to Instagram (as a Reel) via the Meta Graph API.
+
+Both language accounts publish through a Facebook Page's linked Instagram Business
+Account. The Graph API needs a public HTTPS URL to fetch the video from (it can't accept
+a direct upload), so this script first pushes the mp4 into the public `contentmedia` repo
+and builds a raw.githubusercontent.com URL for it.
+
+Running this script IS the "post it" action - there is no further confirmation step, so
+only run it once the user has explicitly approved posting for that day/language.
+
+Usage:
+    python scripts/publish_meta.py --draft output/drafts/2026-09-23_news_draft.json --lang en
+    python scripts/publish_meta.py --draft output/drafts/2026-09-23_news_draft.json --lang en --dry-run
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import requests
+from dotenv import load_dotenv
+import os
+
+from utils import load_config, project_path, read_json
+
+
+def push_video_to_media_repo(video_path: Path, date_str: str, lang: str, config: dict) -> str:
+    """Copy the rendered mp4 into the public media repo, commit, push, return its raw URL."""
+    media_repo = project_path(config["publishing"]["media_repo_path"]).resolve()
+    if not (media_repo / ".git").exists():
+        raise SystemExit(
+            f"Media repo not found at {media_repo}. Clone it first:\n"
+            f"  git clone <your contentmedia repo url> \"{media_repo}\""
+        )
+
+    dest_name = f"{date_str}_news_{lang}.mp4"
+    dest_path = media_repo / "videos" / dest_name
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    dest_path.write_bytes(video_path.read_bytes())
+
+    subprocess.run(["git", "add", f"videos/{dest_name}"], cwd=media_repo, check=True)
+    commit = subprocess.run(
+        ["git", "commit", "-m", f"Add {dest_name}"],
+        cwd=media_repo, capture_output=True, text=True,
+    )
+    if commit.returncode != 0 and "nothing to commit" not in commit.stdout:
+        raise SystemExit(f"git commit failed in media repo:\n{commit.stdout}\n{commit.stderr}")
+    subprocess.run(["git", "push", "origin", "main"], cwd=media_repo, check=True)
+
+    raw_base = config["publishing"]["media_repo_raw_base"]
+    return f"{raw_base}/videos/{dest_name}"
+
+
+def graph_url(config: dict, path: str) -> str:
+    version = config["publishing"]["graph_api_version"]
+    return f"https://graph.facebook.com/{version}/{path}"
+
+
+def create_reel_container(ig_account_id: str, page_token: str, video_url: str, caption: str, config: dict) -> str:
+    resp = requests.post(
+        graph_url(config, f"{ig_account_id}/media"),
+        data={
+            "media_type": "REELS",
+            "video_url": video_url,
+            "caption": caption,
+            "access_token": page_token,
+        },
+        timeout=60,
+    )
+    resp.raise_for_status()
+    return resp.json()["id"]
+
+
+def wait_for_container_ready(creation_id: str, page_token: str, config: dict, timeout_s: int = 300) -> None:
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        resp = requests.get(
+            graph_url(config, creation_id),
+            params={"fields": "status_code", "access_token": page_token},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        status = resp.json().get("status_code")
+        if status == "FINISHED":
+            return
+        if status == "ERROR":
+            raise SystemExit(f"Media container {creation_id} failed to process (status_code=ERROR)")
+        time.sleep(5)
+    raise SystemExit(f"Timed out waiting for media container {creation_id} to finish processing")
+
+
+def publish_container(ig_account_id: str, page_token: str, creation_id: str, config: dict) -> dict:
+    resp = requests.post(
+        graph_url(config, f"{ig_account_id}/media_publish"),
+        data={"creation_id": creation_id, "access_token": page_token},
+        timeout=60,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def main() -> int:
+    load_dotenv(project_path(".env"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--draft", required=True)
+    parser.add_argument("--lang", required=True, choices=["en", "hu"])
+    parser.add_argument("--dry-run", action="store_true", help="Create the media container but don't publish it")
+    args = parser.parse_args()
+
+    config = load_config()
+    draft_path = Path(args.draft)
+    if not draft_path.is_absolute():
+        draft_path = project_path(args.draft)
+    draft = read_json(draft_path)
+    if draft is None:
+        raise SystemExit(f"Draft not found: {draft_path}")
+
+    date_str = draft.get("date") or draft_path.stem.split("_")[0]
+    lang = args.lang
+    caption = draft.get("instagram_caption", {}).get(lang)
+    if not caption:
+        raise SystemExit(f"No instagram_caption.{lang} in {draft_path}")
+
+    video_path = project_path(config["paths"]["videos_dir"], date_str, f"news_{lang}.mp4")
+    if not video_path.exists():
+        raise SystemExit(f"Rendered video not found: {video_path}\nRun render_video.py first.")
+
+    env_prefix = f"META_{lang.upper()}_"
+    ig_account_id = os.environ.get(f"{env_prefix}IG_BUSINESS_ACCOUNT_ID")
+    page_token = os.environ.get(f"{env_prefix}PAGE_ACCESS_TOKEN")
+    if not ig_account_id or not page_token:
+        raise SystemExit(f"Missing {env_prefix}IG_BUSINESS_ACCOUNT_ID / {env_prefix}PAGE_ACCESS_TOKEN in .env")
+
+    print(f"Pushing video to media repo...")
+    video_url = push_video_to_media_repo(video_path, date_str, lang, config)
+    print(f"Public video URL: {video_url}")
+
+    print("Creating Reels container...")
+    creation_id = create_reel_container(ig_account_id, page_token, video_url, caption, config)
+    print(f"Container created: {creation_id}, waiting for it to finish processing...")
+    wait_for_container_ready(creation_id, page_token, config)
+
+    if args.dry_run:
+        print(f"Dry run - container {creation_id} is ready but was NOT published.")
+        return 0
+
+    print("Publishing...")
+    result = publish_container(ig_account_id, page_token, creation_id, config)
+    print(f"Published! Media ID: {result.get('id')}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
