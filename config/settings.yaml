@@ -73,3 +73,5 @@ publishing:
   accounts: [en, hu]
   # Which languages also get a Facebook Page video post (in addition to the Instagram Reel)
   facebook_post_languages: [hu]
+  # Which languages also get the same video posted as an Instagram Story
+  story_languages: [en, hu]

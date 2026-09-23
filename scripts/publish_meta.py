@@ -1,4 +1,5 @@
-"""Publish a rendered reel to Instagram (as a Reel) via the Meta Graph API.
+"""Publish a rendered reel to Instagram (as a Reel + Story, and optionally to Facebook) via
+the Meta Graph API.
 
 Both language accounts publish through a Facebook Page's linked Instagram Business
 Account. The Graph API needs a public HTTPS URL to fetch the video from (it can't accept
@@ -72,6 +73,21 @@ def create_reel_container(ig_account_id: str, page_token: str, video_url: str, c
             "media_type": "REELS",
             "video_url": video_url,
             "caption": caption,
+            "access_token": page_token,
+        },
+        timeout=60,
+    )
+    _raise_with_body(resp)
+    return resp.json()["id"]
+
+
+def create_story_container(ig_account_id: str, page_token: str, video_url: str, config: dict) -> str:
+    """Stories have no caption field - just the video."""
+    resp = requests.post(
+        graph_url(config, f"{ig_account_id}/media"),
+        data={
+            "media_type": "STORIES",
+            "video_url": video_url,
             "access_token": page_token,
         },
         timeout=60,
@@ -257,6 +273,13 @@ def main() -> int:
                 print(f"Facebook permalink: {facebook_permalink}")
             else:
                 print("Could not fetch Facebook permalink.")
+
+    if lang in config["publishing"].get("story_languages", []):
+        print("Posting to Instagram Story...")
+        story_creation_id = create_story_container(ig_account_id, page_token, video_url, config)
+        wait_for_container_ready(story_creation_id, page_token, config)
+        publish_container(ig_account_id, page_token, story_creation_id, config)
+        print("Story published.")
 
     if instagram_permalink:
         send_telegram_announcement(lang, instagram_permalink, facebook_permalink)

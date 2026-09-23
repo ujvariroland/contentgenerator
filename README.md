@@ -102,9 +102,13 @@ posting to both Telegram channels.
 python scripts/publish_meta.py --draft output/drafts/2026-09-22_news_draft.json --lang en
 python scripts/publish_meta.py --draft output/drafts/2026-09-22_news_draft.json --lang hu
 ```
-This actually posts the Reel — there's no further confirmation step inside the script, so
-only run it once you've approved that specific day's video and caption. Add `--dry-run` to
-create the media container without publishing, useful for testing.
+This actually posts the Reel (plus an Instagram Story, and for HU a Facebook Page video
+post — see `config/settings.yaml -> publishing.facebook_post_languages` /
+`story_languages`) — there's no further confirmation step inside the script, so only run
+it once you've approved that specific day's video and caption. Add `--dry-run` to create
+the Reel's media container without publishing anything, useful for testing. If
+`TELEGRAM_BOT_TOKEN` and the chat IDs are set, it also announces the new post(s) with their
+links in the matching Telegram channel.
 
 ## Running pieces standalone (for testing)
 
