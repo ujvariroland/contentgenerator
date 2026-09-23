@@ -12,6 +12,7 @@ only run it once the user has explicitly approved posting for that day/language.
 Usage:
     python scripts/publish_meta.py --draft output/drafts/2026-09-23_news_draft.json --lang en
     python scripts/publish_meta.py --draft output/drafts/2026-09-23_news_draft.json --lang en --dry-run
+    python scripts/publish_meta.py --draft output/drafts/2026-09-23_quote_draft.json --lang en --quote
 """
 
 from __future__ import annotations
@@ -27,10 +28,11 @@ from dotenv import load_dotenv
 import os
 
 from utils import load_config, project_path, read_json
+from build_quote_card import build_quote_card
 
 
-def push_video_to_media_repo(video_path: Path, date_str: str, lang: str, config: dict) -> str:
-    """Copy the rendered mp4 into the public media repo, commit, push, return its raw URL."""
+def _push_to_media_repo(local_path: Path, dest_rel_path: str, config: dict) -> str:
+    """Copy a file into the public media repo, commit, push, return its raw URL."""
     media_repo = project_path(config["publishing"]["media_repo_path"]).resolve()
     if not (media_repo / ".git").exists():
         raise SystemExit(
@@ -38,14 +40,13 @@ def push_video_to_media_repo(video_path: Path, date_str: str, lang: str, config:
             f"  git clone <your contentmedia repo url> \"{media_repo}\""
         )
 
-    dest_name = f"{date_str}_news_{lang}.mp4"
-    dest_path = media_repo / "videos" / dest_name
+    dest_path = media_repo / dest_rel_path
     dest_path.parent.mkdir(parents=True, exist_ok=True)
-    dest_path.write_bytes(video_path.read_bytes())
+    dest_path.write_bytes(local_path.read_bytes())
 
-    subprocess.run(["git", "add", f"videos/{dest_name}"], cwd=media_repo, check=True)
+    subprocess.run(["git", "add", dest_rel_path], cwd=media_repo, check=True)
     commit = subprocess.run(
-        ["git", "commit", "-m", f"Add {dest_name}"],
+        ["git", "commit", "-m", f"Add {dest_rel_path}"],
         cwd=media_repo, capture_output=True, text=True,
     )
     if commit.returncode != 0 and "nothing to commit" not in commit.stdout:
@@ -53,7 +54,15 @@ def push_video_to_media_repo(video_path: Path, date_str: str, lang: str, config:
     subprocess.run(["git", "push", "origin", "main"], cwd=media_repo, check=True)
 
     raw_base = config["publishing"]["media_repo_raw_base"]
-    return f"{raw_base}/videos/{dest_name}"
+    return f"{raw_base}/{dest_rel_path}"
+
+
+def push_video_to_media_repo(video_path: Path, date_str: str, lang: str, config: dict) -> str:
+    return _push_to_media_repo(video_path, f"videos/{date_str}_news_{lang}.mp4", config)
+
+
+def push_image_to_media_repo(image_path: Path, date_str: str, lang: str, config: dict) -> str:
+    return _push_to_media_repo(image_path, f"images/{date_str}_quote_{lang}.png", config)
 
 
 def graph_url(config: dict, path: str) -> str:
@@ -94,6 +103,40 @@ def create_story_container(ig_account_id: str, page_token: str, video_url: str, 
     )
     _raise_with_body(resp)
     return resp.json()["id"]
+
+
+def create_image_container(ig_account_id: str, page_token: str, image_url: str, caption: str, config: dict) -> str:
+    resp = requests.post(
+        graph_url(config, f"{ig_account_id}/media"),
+        data={
+            "image_url": image_url,
+            "caption": caption,
+            "access_token": page_token,
+        },
+        timeout=60,
+    )
+    _raise_with_body(resp)
+    return resp.json()["id"]
+
+
+def post_facebook_photo(page_id: str, page_token: str, image_url: str, caption: str, config: dict) -> str:
+    resp = requests.post(
+        graph_url(config, f"{page_id}/photos"),
+        data={"url": image_url, "caption": caption, "access_token": page_token},
+        timeout=60,
+    )
+    _raise_with_body(resp)
+    return resp.json()["id"]
+
+
+def get_facebook_photo_permalink(photo_id: str, page_token: str, config: dict) -> str | None:
+    resp = requests.get(
+        graph_url(config, photo_id),
+        params={"fields": "link", "access_token": page_token},
+        timeout=30,
+    )
+    _raise_with_body(resp)
+    return resp.json().get("link")
 
 
 def wait_for_container_ready(creation_id: str, page_token: str, config: dict, timeout_s: int = 300) -> None:
@@ -185,13 +228,19 @@ TELEGRAM_ANNOUNCEMENT = {
 }
 
 
-def send_telegram_announcement(lang: str, instagram_url: str, facebook_url: str | None) -> None:
+TELEGRAM_QUOTE_ANNOUNCEMENT = {
+    "en": "\U0001F4AC New tennis quote is up! \U0001F449 {instagram_url}",
+    "hu": "\U0001F4AC Új tenisz idézet érkezett! \U0001F449 {instagram_url}",
+}
+
+
+def send_telegram_announcement(lang: str, instagram_url: str, facebook_url: str | None, template: dict = TELEGRAM_ANNOUNCEMENT) -> None:
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get(f"TELEGRAM_{lang.upper()}_CHAT_ID")
     if not bot_token or not chat_id:
         print(f"Skipping Telegram announcement - missing TELEGRAM_BOT_TOKEN or TELEGRAM_{lang.upper()}_CHAT_ID")
         return
-    text = TELEGRAM_ANNOUNCEMENT[lang].format(instagram_url=instagram_url, facebook_url=facebook_url or "")
+    text = template[lang].format(instagram_url=instagram_url, facebook_url=facebook_url or "")
     resp = requests.post(
         f"https://api.telegram.org/bot{bot_token}/sendMessage",
         data={"chat_id": chat_id, "text": text},
@@ -203,12 +252,68 @@ def send_telegram_announcement(lang: str, instagram_url: str, facebook_url: str 
         print("Telegram announcement sent.")
 
 
+def run_quote_flow(draft: dict, draft_path: Path, lang: str, config: dict) -> int:
+    date_str = draft.get("date") or draft_path.stem.split("_")[0]
+    quote = draft.get("quote", {}).get(lang)
+    attribution = draft.get("attribution")
+    context = draft.get("context", {}).get(lang)
+    if not quote or not attribution:
+        raise SystemExit(f"Missing quote/attribution for {lang} in {draft_path}")
+
+    env_prefix = f"META_{lang.upper()}_"
+    ig_account_id = os.environ.get(f"{env_prefix}IG_BUSINESS_ACCOUNT_ID")
+    page_id = os.environ.get(f"{env_prefix}PAGE_ID")
+    page_token = os.environ.get(f"{env_prefix}PAGE_ACCESS_TOKEN")
+    if not ig_account_id or not page_token:
+        raise SystemExit(f"Missing {env_prefix}IG_BUSINESS_ACCOUNT_ID / {env_prefix}PAGE_ACCESS_TOKEN in .env")
+
+    image_dir = project_path("output", "quote_cards")
+    image_dir.mkdir(parents=True, exist_ok=True)
+    image_path = image_dir / f"{date_str}_quote_{lang}.png"
+    img = build_quote_card(quote, attribution, context, config)
+    img.convert("RGB").save(image_path)
+    print(f"Wrote quote card: {image_path}")
+
+    caption_lines = [f'"{quote}"', f"— {attribution}" + (f", {context}" if context else "")]
+    hashtags = "#Tennis #ATP #WTA #TennisQuote" if lang == "en" else "#Tenisz #ATP #WTA #TeniszIdezet"
+    caption = "\n\n".join(caption_lines + [hashtags])
+
+    print("Pushing image to media repo...")
+    image_url = push_image_to_media_repo(image_path, date_str, lang, config)
+    print(f"Public image URL: {image_url}")
+
+    print("Creating image container...")
+    creation_id = create_image_container(ig_account_id, page_token, image_url, caption, config)
+
+    print("Publishing...")
+    result = publish_container(ig_account_id, page_token, creation_id, config)
+    media_id = result.get("id")
+    print(f"Published! Media ID: {media_id}")
+
+    instagram_permalink = get_media_permalink(media_id, page_token, config)
+    if instagram_permalink:
+        print(f"Instagram permalink: {instagram_permalink}")
+
+    facebook_permalink = None
+    if lang in config["publishing"].get("facebook_post_languages", []) and page_id:
+        print("Posting to Facebook Page...")
+        fb_photo_id = post_facebook_photo(page_id, page_token, image_url, caption, config)
+        facebook_permalink = get_facebook_photo_permalink(fb_photo_id, page_token, config)
+        if facebook_permalink:
+            print(f"Facebook permalink: {facebook_permalink}")
+
+    if instagram_permalink:
+        send_telegram_announcement(lang, instagram_permalink, facebook_permalink, template=TELEGRAM_QUOTE_ANNOUNCEMENT)
+    return 0
+
+
 def main() -> int:
     load_dotenv(project_path(".env"))
     parser = argparse.ArgumentParser()
     parser.add_argument("--draft", required=True)
     parser.add_argument("--lang", required=True, choices=["en", "hu"])
     parser.add_argument("--dry-run", action="store_true", help="Create the media container but don't publish it")
+    parser.add_argument("--quote", action="store_true", help="Publish a quote-card image instead of the news video")
     args = parser.parse_args()
 
     config = load_config()
@@ -219,8 +324,12 @@ def main() -> int:
     if draft is None:
         raise SystemExit(f"Draft not found: {draft_path}")
 
-    date_str = draft.get("date") or draft_path.stem.split("_")[0]
     lang = args.lang
+
+    if args.quote:
+        return run_quote_flow(draft, draft_path, lang, config)
+
+    date_str = draft.get("date") or draft_path.stem.split("_")[0]
     caption = draft.get("instagram_caption", {}).get(lang)
     if not caption:
         raise SystemExit(f"No instagram_caption.{lang} in {draft_path}")

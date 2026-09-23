@@ -35,6 +35,20 @@ text:
   title_max_width_px: 860     # wider than headlines since it's a single centered banner
   title_headline_gap_px: 90   # extra space between the title box and the first headline box
 
+quote_card:
+  # Standalone image post (no video) - a single attributed quote on a branded background.
+  width: 1080
+  height: 1350               # 4:5, Instagram's recommended feed portrait ratio
+  background_color: [13, 27, 51, 255]     # Tennis Lab navy
+  quote_color: [212, 175, 55, 255]        # Tennis Lab gold
+  attribution_color: [255, 255, 255, 255] # white
+  mark_color: [212, 175, 55, 120]         # translucent gold for the big decorative quote mark
+  quote_font_size: 62
+  attribution_font_size: 34
+  line_height_multiplier: 1.25
+  margin_x_px: 100
+  max_text_width_px: 880
+
 weather:
   api_base_url: "https://api.openweathermap.org/data/2.5"
   units: metric

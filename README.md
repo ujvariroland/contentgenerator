@@ -106,8 +106,14 @@ This actually posts the Reel (plus an Instagram Story, and for HU a Facebook Pag
 post — see `config/settings.yaml -> publishing.facebook_post_languages` /
 `story_languages`) — there's no further confirmation step inside the script, so only run
 it once you've approved that specific day's video and caption. Add `--dry-run` to create
-the Reel's media container without publishing anything, useful for testing. If
-`TELEGRAM_BOT_TOKEN` and the chat IDs are set, it also announces the new post(s) with their
+the Reel's media container without publishing anything, useful for testing.
+
+On days with a genuinely notable recent quote, there's also a standalone image post (no
+video): `python scripts/publish_meta.py --draft output/drafts/2026-09-22_quote_draft.json --lang en --quote`.
+This renders `scripts/build_quote_card.py`'s image and posts it the same way (Instagram
+image post, Facebook photo post for HU, Telegram announcement).
+
+If `TELEGRAM_BOT_TOKEN` and the chat IDs are set, it also announces the new post(s) with their
 links in the matching Telegram channel.
 
 ## Running pieces standalone (for testing)

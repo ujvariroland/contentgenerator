@@ -70,6 +70,39 @@ step for this feature — it's informational, for the user to decide whether/how
 - `suggested_angle_en` / `_hu`: short paragraph Claude drafts explaining the possible
   betting/performance impact — the user decides whether to turn it into a post.
 
+## Quote draft — `output/drafts/<date>_quote_draft.json`
+
+A standalone image post (no video) - one short, attributed tennis quote on a branded card.
+Written only when a genuinely notable, recent (last few days), real quote is found - never
+invent or paraphrase-as-verbatim a quote. Skip this file entirely on days with nothing
+worth quoting rather than force one.
+
+```json
+{
+  "date": "2026-09-22",
+  "quote": {
+    "en": "I am taking this time to reset and heal so when I return I am 100% ready to go.",
+    "hu": "Ezt az időt arra használom, hogy helyreálljak és gyógyuljak, hogy amikor visszatérek, 100%-osan készen álljak."
+  },
+  "attribution": "Jack Draper",
+  "context": {
+    "en": "on ending his 2026 season",
+    "hu": "a 2026-os szezonja lezárásáról"
+  },
+  "source_url": "https://www.atptour.com/en/news/draper-announcement-september-2026",
+  "status": "pending"
+}
+```
+
+- `quote`: keep it short (1-2 sentences) and verbatim in `en` as actually reported by a
+  news source - never fabricated. `hu` is a faithful translation, not a rewrite.
+- `attribution`: just the person's name, unchanged in both languages.
+- `context`: a short phrase (not a full sentence) explaining the situation, in both
+  languages.
+- `source_url`: required - always cite where the quote was reported.
+- Rendered via `scripts/build_quote_card.py` (a single PNG image, not a video) and posted
+  as an image post via `scripts/publish_meta.py --lang <lang> --quote`.
+
 ## Tournaments cache — `data/tournaments_today.json`
 
 Ephemeral, overwritten daily. Input to `fetch_weather.py`.
