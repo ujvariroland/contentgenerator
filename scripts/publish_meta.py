@@ -211,7 +211,7 @@ TELEGRAM_ANNOUNCEMENT = {
         "We've got today's freshest tennis news for you — everything worth knowing if "
         "you're into the world of tennis. \U0001F4E9\n\n"
         "Check it out at the link below:\n\n"
-        "\U0001F4F7: {instagram_url}\n\n"
+        "\U0001F4F8: {instagram_url}\n\n"
         "If you enjoyed it and want to see more posts like this, please follow us on social "
         "media and leave an algorithm-friendly like/comment."
     ),
@@ -220,8 +220,8 @@ TELEGRAM_ANNOUNCEMENT = {
         "Elhoztuk a mai napi legfrissebb híreket, minden amiről érdemes tudnod, ha "
         "érdekel a tenisz világa.\U0001F4E9\n\n"
         "Az alábbi linkeken tekintheted meg ezeket:\n\n"
-        "\U0001F60E: {facebook_url}\n\n"
-        "\U0001F4F7: {instagram_url}\n\n"
+        "\U0001F4D8: {facebook_url}\n\n"
+        "\U0001F4F8: {instagram_url}\n\n"
         "Ha tetszett, és szeretnél több ilyen posztot látni, kérlek kövess be a social "
         "médián keresztül és hagyj egy algoritmus támogató like-ot/kommentet."
     ),
