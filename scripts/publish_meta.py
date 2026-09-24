@@ -105,6 +105,40 @@ def create_story_container(ig_account_id: str, page_token: str, video_url: str, 
     return resp.json()["id"]
 
 
+def create_image_story_container(ig_account_id: str, page_token: str, image_url: str, config: dict) -> str:
+    """Instagram Story from a still image - no caption field, just the image."""
+    resp = requests.post(
+        graph_url(config, f"{ig_account_id}/media"),
+        data={
+            "media_type": "STORIES",
+            "image_url": image_url,
+            "access_token": page_token,
+        },
+        timeout=60,
+    )
+    _raise_with_body(resp)
+    return resp.json()["id"]
+
+
+def post_facebook_photo_story(page_id: str, page_token: str, image_url: str, config: dict) -> str:
+    """Upload a photo (unpublished) then post it as a Facebook Page Story."""
+    upload_resp = requests.post(
+        graph_url(config, f"{page_id}/photos"),
+        data={"url": image_url, "published": "false", "access_token": page_token},
+        timeout=60,
+    )
+    _raise_with_body(upload_resp)
+    photo_id = upload_resp.json()["id"]
+
+    story_resp = requests.post(
+        graph_url(config, f"{page_id}/photo_stories"),
+        data={"photo_id": photo_id, "access_token": page_token},
+        timeout=60,
+    )
+    _raise_with_body(story_resp)
+    return story_resp.json().get("post_id", photo_id)
+
+
 def create_image_container(ig_account_id: str, page_token: str, image_url: str, caption: str, config: dict) -> str:
     resp = requests.post(
         graph_url(config, f"{ig_account_id}/media"),
