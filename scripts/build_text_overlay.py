@@ -101,8 +101,13 @@ def build_overlay(draft: dict, lang: str, config: dict) -> Image.Image:
     safe_bottom = t["safe_bottom_px"]
     gap = t["box_gap_px"]
 
-    # Title: centered horizontally, pinned near the top.
-    title_text = t["title_text"].get(lang, t["title_text"]["en"])
+    # Title: centered horizontally, pinned near the top. A draft can override the default
+    # config title (e.g. the weekly recap saying "This week in tennis" instead).
+    title_override = draft.get("title_override")
+    if title_override:
+        title_text = title_override.get(lang, title_override.get("en", ""))
+    else:
+        title_text = t["title_text"].get(lang, t["title_text"]["en"])
     title_lines = _wrap_text(draw, title_text, title_font, title_max_width)
     title_box_width, title_box_height = _box_size(draw, title_lines, title_font, title_line_height, t)
     title_x = (width - title_box_width) / 2

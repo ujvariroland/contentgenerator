@@ -41,6 +41,10 @@ never need to guess at what Claude wrote.
   line breaks (not `\n` escapes), so it can be copy-pasted straight into Instagram:
   `output/drafts/<date>_instagram_caption_en.txt` and `..._hu.txt`. The JSON field is the
   source of truth for automation/history; the `.txt` files are for the human to copy from.
+- `title_override` (optional): `{"en": "...", "hu": "..."}`. If present, `build_text_overlay.py`
+  uses this instead of `config/settings.yaml -> text.title_text` for the on-video title.
+  Used by the weekly recap draft (see below) to say "This week in tennis" instead of the
+  daily title, while reusing this same schema and the same render/publish scripts unchanged.
 
 ## Weather draft — `output/drafts/<date>_weather_draft.json`
 
@@ -102,6 +106,58 @@ worth quoting rather than force one.
 - `source_url`: required - always cite where the quote was reported.
 - Rendered via `scripts/build_quote_card.py` (a single PNG image, not a video) and posted
   as an image post via `scripts/publish_meta.py --lang <lang> --quote`.
+
+## Poll draft — `output/drafts/<date>_poll_draft.json`
+
+A daily Telegram poll about that day's most notable match. Written only when there's a
+genuinely competitive/notable match to feature - skip entirely on a day without one rather
+than force a poll on an obscure or lopsided pairing.
+
+```json
+{
+  "date": "2026-09-24",
+  "match": {
+    "player_a": {"name": "Alexander Zverev", "short": "Zverev A.", "flag": "🇩🇪"},
+    "player_b": {"name": "Carlos Alcaraz", "short": "Alcaraz C.", "flag": "🇪🇸"}
+  },
+  "tournament": "Laver Cup",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
+```
+
+- Pick the match using ranking first (the two most notable/highest-ranked players playing
+  that day), then among comparably notable candidates prefer the closest/most competitive
+  one (similar rankings or current form) over a lopsided mismatch.
+- `short`: `"LastName F."` format (surname, space, first-initial with a period).
+- `flag`: the player's country flag emoji. Used as-is in both languages - only `question`
+  is translated, the poll options (`short` + `flag`) are identical in EN and HU.
+- Posted via `scripts/publish_poll.py` (Telegram `sendPoll`, no image/video involved).
+
+## On this day in tennis draft — `output/drafts/<date>_onthisday_draft.json`
+
+A standalone Story image (not a video) with 1-3 genuinely notable tennis history facts for
+today's calendar date. Optional exactly like the quote draft: skip entirely if nothing
+real and notable turns up for the date - never invent an event.
+
+```json
+{
+  "date": "2026-09-24",
+  "facts": [
+    {"en": "...", "hu": "...", "year": 2008, "source_url": "..."}
+  ],
+  "status": "pending"
+}
+```
+
+- Check `data/onthisday_history.json` first (flat list of `{date_used, event_key}`) so the
+  same fact isn't reused on the same calendar date in a future year.
+- Each fact must cite a real `source_url` - same sourcing rule as the quote draft.
+- Rendered via `scripts/build_onthisday_card.py` (reuses `build_text_overlay.py`'s
+  `build_overlay()` treating `facts` like `headlines`, with `title_override` set to
+  `{"en": "On this day in tennis", "hu": "Ezen a napon a teniszben"}`, composited onto a
+  solid navy background - a Story image, not an ffmpeg video) and posted via
+  `scripts/auto_publish_onthisday_story.py`.
 
 ## Tournaments cache — `data/tournaments_today.json`
 
