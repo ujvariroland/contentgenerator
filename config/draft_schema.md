@@ -132,7 +132,10 @@ than force a poll on an obscure or lopsided pairing.
 - `short`: `"LastName F."` format (surname, space, first-initial with a period).
 - `flag`: the player's country flag emoji. Used as-is in both languages - only `question`
   is translated, the poll options (`short` + `flag`) are identical in EN and HU.
-- Posted via `scripts/publish_poll.py` (Telegram `sendPoll`, no image/video involved).
+- Posted via `scripts/publish_poll.py`: a native interactive poll on both Telegram
+  channels (`sendPoll`), plus a static (non-interactive - the Graph API has no support for
+  poll stickers) companion image posted as an Instagram Story on both accounts via
+  `scripts/build_poll_card.py`.
 
 ## On this day in tennis draft — `output/drafts/<date>_onthisday_draft.json`
 

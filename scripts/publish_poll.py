@@ -18,7 +18,9 @@ from datetime import datetime
 import requests
 from dotenv import load_dotenv
 
-from utils import project_path, read_json, write_json, today_str
+from utils import load_config, project_path, read_json, write_json, today_str
+from build_poll_card import build_poll_card
+from publish_meta import push_image_to_media_repo, create_image_story_container, publish_container
 
 
 def log(message: str) -> None:
@@ -65,6 +67,7 @@ def main() -> int:
         log(f"{date_str}: poll already posted, skipping.")
         return 0
 
+    config = load_config()
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     match = draft["match"]
     option_a = f"{match['player_a']['short']} {match['player_a']['flag']}"
@@ -81,6 +84,29 @@ def main() -> int:
         if send_poll(bot_token, chat_id, question, [option_a, option_b]):
             log(f"{date_str}: posted poll ({lang_key}).")
         else:
+            ok = False
+
+    # Static (non-interactive) Instagram Story companion - the Graph API has no support
+    # for interactive poll stickers, so this just mirrors the question visually.
+    image_dir = project_path("output", "poll_cards")
+    image_dir.mkdir(parents=True, exist_ok=True)
+    for lang_key in ("en", "hu"):
+        try:
+            img_path = image_dir / f"{date_str}_poll_{lang_key}.png"
+            build_poll_card(draft, lang_key, config).convert("RGB").save(img_path)
+            img_url = push_image_to_media_repo(img_path, date_str, lang_key, config)
+            env_prefix = f"META_{lang_key.upper()}_"
+            ig_id = os.environ.get(f"{env_prefix}IG_BUSINESS_ACCOUNT_ID")
+            token = os.environ.get(f"{env_prefix}PAGE_ACCESS_TOKEN")
+            if not ig_id or not token:
+                log(f"{lang_key}: missing Meta credentials for poll Story.")
+                ok = False
+                continue
+            creation_id = create_image_story_container(ig_id, token, img_url, config)
+            publish_container(ig_id, token, creation_id, config)
+            log(f"{date_str}: posted poll Story ({lang_key}).")
+        except SystemExit as e:
+            log(f"{lang_key} poll Story failed: {e}")
             ok = False
 
     draft["status"] = "posted"
