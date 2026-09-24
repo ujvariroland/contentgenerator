@@ -162,6 +162,32 @@ real and notable turns up for the date - never invent an event.
   solid navy background - a Story image, not an ffmpeg video) and posted via
   `scripts/auto_publish_onthisday_story.py`.
 
+## Weekly stats draft — `output/drafts/<date_range>_weekly_stats_draft.json`
+
+A standalone Story image (not a video) showing that week's tipping performance. Unlike the
+other drafts, this one is **not gathered automatically** - the user reports these numbers
+directly in chat each week (Claude has no access to the actual tip results), and Claude
+writes this file from what the user says.
+
+```json
+{
+  "date_range": "2026.09.10-17",
+  "record": "27/22",
+  "profit_units": "+14.5",
+  "hit_rate": "55%",
+  "status": "pending"
+}
+```
+
+- `date_range`: display string for the week covered, in whatever format the user gives it.
+- `record`, `profit_units`, `hit_rate`: display strings, shown as-is (not recalculated).
+- Rendered via `scripts/build_weekly_stats_card.py` (reuses `build_text_overlay.py`'s
+  `build_overlay()`, treating each stat line as a `headlines` entry, with a
+  `title_override` of `{"en": "Weekly Results", "hu": "Heti eredmény"}`) and posted via
+  `scripts/publish_weekly_stats.py` as an Instagram Story on both accounts, plus a Facebook
+  Story for HU. This is human-triggered each week (the user runs the publish script when
+  ready) and not wired into any automatic schedule, since the input itself is manual.
+
 ## Tournaments cache — `data/tournaments_today.json`
 
 Ephemeral, overwritten daily. Input to `fetch_weather.py`.
