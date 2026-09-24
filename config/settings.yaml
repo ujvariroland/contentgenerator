@@ -36,9 +36,13 @@ text:
   title_headline_gap_px: 90   # extra space between the title box and the first headline box
 
 quote_card:
-  # Standalone image post (no video) - a single attributed quote on a branded background.
+  # Standalone image - used as an Instagram/Facebook Story, so it must match the 9:16
+  # Story viewport (1080x1920), not the 4:5 feed ratio, or the phone crops/zooms it and
+  # cuts off text at the edges.
   width: 1080
-  height: 1350               # 4:5, Instagram's recommended feed portrait ratio
+  height: 1920
+  safe_top_px: 320            # below the Story header (profile name/timer bar)
+  safe_bottom_px: 1650        # above the reply box / icon row
   background_color: [13, 27, 51, 255]     # Tennis Lab navy
   quote_color: [212, 175, 55, 255]        # Tennis Lab gold
   attribution_color: [255, 255, 255, 255] # white

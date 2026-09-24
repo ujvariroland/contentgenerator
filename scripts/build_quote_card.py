@@ -62,8 +62,10 @@ def build_quote_card(quote: str, attribution: str, context: str | None, config: 
 
     total_height = mark_block_height + gap_mark_to_quote + quote_block_height + gap_quote_to_attribution + attribution_block_height
 
+    safe_top = c.get("safe_top_px", 0)
+    safe_bottom = c.get("safe_bottom_px", height)
     x = c["margin_x_px"]
-    y = (height - total_height) // 2
+    y = safe_top + max(0, (safe_bottom - safe_top - total_height) // 2)
 
     draw.text((x - 15, y - int(mark_font_size * 0.28)), "“", font=mark_font, fill=tuple(c["mark_color"]))
     y += mark_block_height + gap_mark_to_quote
