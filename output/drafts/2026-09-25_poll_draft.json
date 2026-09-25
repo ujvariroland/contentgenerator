@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-25",
+  "match": {
+    "player_a": {"name": "Casper Ruud", "short": "Ruud C.", "flag": "🇳🇴"},
+    "player_b": {"name": "Francisco Cerundolo", "short": "Cerundolo F.", "flag": "🇦🇷"}
+  },
+  "tournament": "Laver Cup",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
