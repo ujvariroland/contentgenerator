@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-27",
+  "match": {
+    "player_a": {"name": "Carlos Alcaraz", "short": "Alcaraz C.", "flag": "🇪🇸"},
+    "player_b": {"name": "Alex de Minaur", "short": "de Minaur A.", "flag": "🇦🇺"}
+  },
+  "tournament": "Laver Cup",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
