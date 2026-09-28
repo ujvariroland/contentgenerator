@@ -1,13 +1,6 @@
 {
-  "date": "2026-09-27",
+  "date": "2026-09-28",
   "tournaments": [
-    {
-      "name": "Laver Cup",
-      "city": "London",
-      "country": "GB",
-      "surface": "hard",
-      "indoor": true
-    },
     {
       "name": "Chengdu Open",
       "city": "Chengdu",
@@ -21,27 +14,6 @@
       "country": "CN",
       "surface": "hard",
       "indoor": false
-    },
-    {
-      "name": "Hana Bank Korea Open",
-      "city": "Seoul",
-      "country": "KR",
-      "surface": "hard",
-      "indoor": false
-    },
-    {
-      "name": "Singapore Tennis Open",
-      "city": "Singapore",
-      "country": "SG",
-      "surface": "hard",
-      "indoor": true
-    },
-    {
-      "name": "Billie Jean King Cup Finals",
-      "city": "Shenzhen",
-      "country": "CN",
-      "surface": "hard",
-      "indoor": true
     }
   ]
 }
