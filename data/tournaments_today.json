@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-28",
+  "date": "2026-09-29",
   "tournaments": [
     {
       "name": "Chengdu Open",
@@ -12,6 +12,20 @@
       "name": "Hangzhou Open",
       "city": "Hangzhou",
       "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "China Open",
+      "city": "Beijing",
+      "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Japan Open",
+      "city": "Tokyo",
+      "country": "JP",
       "surface": "hard",
       "indoor": false
     }
