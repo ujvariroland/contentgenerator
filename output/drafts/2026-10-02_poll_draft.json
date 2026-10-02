@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-02",
+  "match": {
+    "player_a": {"name": "Frances Tiafoe", "short": "Tiafoe F.", "flag": "🇺🇸"},
+    "player_b": {"name": "Arthur Fils", "short": "Fils A.", "flag": "🇫🇷"}
+  },
+  "tournament": "Japan Open",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
