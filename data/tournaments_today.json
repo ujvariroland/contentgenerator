@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-02",
+  "date": "2026-10-03",
   "tournaments": [
     {
       "name": "China Open",
@@ -11,13 +11,6 @@
     {
       "name": "Japan Open",
       "city": "Tokyo",
-      "country": "JP",
-      "surface": "hard",
-      "indoor": false
-    },
-    {
-      "name": "Asian Games Tennis (Women's Singles Final)",
-      "city": "Nagoya",
       "country": "JP",
       "surface": "hard",
       "indoor": false
