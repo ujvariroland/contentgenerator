@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-05",
+  "date": "2026-10-06",
   "tournaments": [
     {
       "name": "China Open",
@@ -12,6 +12,13 @@
       "name": "Japan Open",
       "city": "Tokyo",
       "country": "JP",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Shanghai Masters",
+      "city": "Shanghai",
+      "country": "CN",
       "surface": "hard",
       "indoor": false
     }
