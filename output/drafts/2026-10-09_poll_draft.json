@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-09",
+  "match": {
+    "player_a": {
+      "name": "Novak Djokovic",
+      "short": "Djokovic N.",
+      "flag": "🇷🇸"
+    },
+    "player_b": {
+      "name": "Hubert Hurkacz",
+      "short": "Hurkacz H.",
+      "flag": "🇵🇱"
+    }
+  },
+  "tournament": "Rolex Shanghai Masters",
+  "question": {
+    "en": "Who wins today?",
+    "hu": "Ki nyer ma?"
+  },
+  "status": "pending"
+}
