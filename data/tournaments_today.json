@@ -1,9 +1,16 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-10",
   "tournaments": [
     {
       "name": "Rolex Shanghai Masters",
       "city": "Shanghai",
+      "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Wuhan Open",
+      "city": "Wuhan",
       "country": "CN",
       "surface": "hard",
       "indoor": false
