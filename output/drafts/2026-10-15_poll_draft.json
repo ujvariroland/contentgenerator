@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-15",
+  "match": {
+    "player_a": {"name": "Alexander Zverev", "short": "Zverev A.", "flag": "🇩🇪"},
+    "player_b": {"name": "Alex de Minaur", "short": "de Minaur A.", "flag": "🇦🇺"}
+  },
+  "tournament": "Shanghai Masters",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
