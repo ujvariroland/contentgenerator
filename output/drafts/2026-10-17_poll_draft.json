@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-17",
+  "match": {
+    "player_a": {
+      "name": "Alexander Zverev",
+      "short": "Zverev A.",
+      "flag": "🇩🇪"
+    },
+    "player_b": {
+      "name": "Alejandro Davidovich Fokina",
+      "short": "Davidovich Fokina A.",
+      "flag": "🇪🇸"
+    }
+  },
+  "tournament": "Shanghai Masters",
+  "question": {
+    "en": "Who wins today?",
+    "hu": "Ki nyer ma?"
+  },
+  "status": "pending"
+}
