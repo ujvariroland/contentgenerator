@@ -1,24 +1,38 @@
 {
-  "date": "2026-10-18",
+  "date": "2026-10-19",
   "tournaments": [
     {
-      "name": "Rolex Shanghai Masters",
-      "city": "Shanghai",
-      "country": "CN",
+      "name": "Almaty Open",
+      "city": "Almaty",
+      "country": "KZ",
       "surface": "hard",
-      "indoor": false
+      "indoor": true
     },
     {
-      "name": "Wuhan Open",
-      "city": "Wuhan",
-      "country": "CN",
+      "name": "BNP Paribas Fortis European Open",
+      "city": "Brussels",
+      "country": "BE",
       "surface": "hard",
-      "indoor": false
+      "indoor": true
     },
     {
-      "name": "Ningbo Open (qualifying)",
+      "name": "Grand Prix Auvergne-Rhone-Alpes (Lyon Open)",
+      "city": "Lyon",
+      "country": "FR",
+      "surface": "hard",
+      "indoor": true
+    },
+    {
+      "name": "Ningbo Open",
       "city": "Ningbo",
       "country": "CN",
+      "surface": "hard",
+      "indoor": false
+    },
+    {
+      "name": "Kinoshita Group Japan Open",
+      "city": "Osaka",
+      "country": "JP",
       "surface": "hard",
       "indoor": false
     }
