@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-19",
+  "date": "2026-10-20",
   "tournaments": [
     {
       "name": "Almaty Open",
@@ -9,14 +9,14 @@
       "indoor": true
     },
     {
-      "name": "BNP Paribas Fortis European Open",
+      "name": "European Open",
       "city": "Brussels",
       "country": "BE",
       "surface": "hard",
       "indoor": true
     },
     {
-      "name": "Grand Prix Auvergne-Rhone-Alpes (Lyon Open)",
+      "name": "Lyon Open (Grand Prix Auvergne-Rhone-Alpes)",
       "city": "Lyon",
       "country": "FR",
       "surface": "hard",
