@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-21",
+  "date": "2026-10-22",
   "tournaments": [
     {
       "name": "Almaty Open",
@@ -16,7 +16,7 @@
       "indoor": true
     },
     {
-      "name": "Lyon Open (Grand Prix Auvergne-Rhone-Alpes)",
+      "name": "Grand Prix Auvergne-Rhone-Alpes",
       "city": "Lyon",
       "country": "FR",
       "surface": "hard",

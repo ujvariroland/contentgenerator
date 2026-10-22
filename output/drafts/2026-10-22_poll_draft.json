@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-22",
+  "match": {
+    "player_a": {"name": "Karen Khachanov", "short": "Khachanov K.", "flag": "🇷🇺"},
+    "player_b": {"name": "Tomas Machac", "short": "Machac T.", "flag": "🇨🇿"}
+  },
+  "tournament": "Almaty Open",
+  "question": {"en": "Who wins today?", "hu": "Ki nyer ma?"},
+  "status": "pending"
+}
